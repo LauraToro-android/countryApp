@@ -1,0 +1,126 @@
+<section class="px-4 py-6 max-w-7xl mx-auto">
+  <!-- Nombre y población -->
+  <header class="mb-6">
+    <h1 class="text-3xl font-bold">{{ country().name }}</h1>
+    <p class="text-lg text-gray-600">
+      Población: {{ country().population | number }}
+    </p>
+  </header>
+
+  <!-- Estadísticas: diseño en rejilla responsiva -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    
+    <!-- Población -->
+    <div class="stat shadow">
+      <div class="stat-title">Población</div>
+      <div class="stat-value">{{ country().population | number }}</div>
+      <div class="stat-desc">Desde {{ currentYear() }}</div>
+    </div>
+
+    <!-- Capital -->
+    <div class="stat shadow">
+      <div class="stat-title">Capital</div>
+      <div class="stat-value text-sm break-words max-w-full">{{ country().capital }}</div>
+      <div class="stat-desc">{{ country().region }}</div>
+    </div>
+
+    <!-- Subregión -->
+    <div class="stat shadow">
+      <div class="stat-title">Subregión</div>
+      <div class="stat-value text-sm">{{ country().subRegion }}</div>
+      <div class="stat-desc">{{ country().region }}</div>
+    </div>
+
+    <!-- Coordenadas -->
+    <div class="stat shadow">
+      <div class="stat-title">Lat/Lng de Capital</div>
+      <div class="stat-value">
+        {{ country().capitalInfo?.latlng?.[0] ?? '—' }},
+        {{ country().capitalInfo?.latlng?.[1] ?? '—' }}
+      </div>
+      <div class="stat-desc">Coordenadas</div>
+    </div>
+
+    <!-- Monedas -->
+    <div class="stat shadow">
+      <div class="stat-title">Moneda(s)</div>
+      <div class="stat-value text-sm break-words max-w-full">
+        <ng-container *ngFor="let currency of currenciesDisplay(); let last = last">
+          {{ currency }}<span *ngIf="!last">, </span>
+        </ng-container>
+      </div>
+    </div>
+
+    <!-- Gini -->
+    <div class="stat shadow">
+      <div class="stat-title">Índice de Gini</div>
+      <div [ngClass]="giniColor()" class="stat-value">
+        {{ country().gini !== undefined ? (country().gini + '%') : 'No disponible' }}
+      </div>
+      <div class="stat-desc">Desigualdad de ingresos</div>
+    </div>
+
+    <!-- Área -->
+    <div class="stat shadow">
+      <div class="stat-title">Área</div>
+      <div class="stat-value">
+        <ng-container *ngIf="country().area !== undefined; else noArea">
+          {{ country().area | number:'1.2-2' }} km²
+        </ng-container>
+        <ng-template #noArea>No disponible</ng-template>
+      </div>
+      <div class="stat-desc">Superficie del país</div>
+    </div>
+
+    <!-- Fronteras -->
+    <div class="stat shadow">
+      <div class="stat-title">Fronteras</div>
+      <div class="stat-value text-sm">
+        <ng-container *ngIf="country().borders?.length; else noBorders">
+          {{ country().borders!.join(', ') }}
+        </ng-container>
+        <ng-template #noBorders>No tiene fronteras</ng-template>
+      </div>
+      <div class="stat-desc">Países vecinos</div>
+    </div>
+  </div>
+ <!--Idiomas del país-->
+  <div class="stat shadow">
+  <div class="stat-title">Idioma(s)</div>
+  <div class="stat-value text-sm text-center break-words">
+    <ng-container *ngIf="languagesDisplay().length > 0; else noLanguages">
+      <span *ngFor="let language of languagesDisplay(); let last = last">
+        {{ language }}<span *ngIf="!last">, </span>
+      </span>
+    </ng-container>
+    <ng-template #noLanguages>No disponibles</ng-template>
+  </div>
+  <div class="stat-desc">Lenguas oficiales</div>
+</div>
+
+  <!-- Espacio para bandera y mapa -->
+  <div class="mt-10 flex flex-col md:flex-row gap-6 items-center justify-center">
+    <!-- Bandera -->
+    <div class="w-full md:w-1/2">
+      <img
+        [alt]="country().name"
+        [src]="country().flagSvg"
+        class="rounded shadow-md w-full h-auto object-contain"
+      />
+    </div>
+
+    <!-- Mapa -->
+    <div class="w-full md:w-1/2">
+      <iframe
+        *ngIf="capitalMapUrl() as mapUrl"
+        width="100%"
+        height="400"
+        frameborder="0"
+        style="border:0"
+        [src]="mapUrl"
+        allowfullscreen
+        class="rounded shadow-md"
+      ></iframe>
+    </div>
+  </div>
+</section>

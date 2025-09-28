@@ -1,8 +1,11 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, effect, inject, signal } from '@angular/core';
 import { SearchInputComponent } from "../../components/search-input/search-input.component";
 import { CountryListComponent } from "../../components/country-list/country-list.component";
 import { CountryService } from '../../services/country.service';
 import { Country } from '../../interfaces/country.interfaces';
+import { rxResource, toObservable } from '@angular/core/rxjs-interop';
+import { debounceTime, distinctUntilChanged, of, switchMap } from 'rxjs';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-by-country-page',
@@ -11,26 +14,43 @@ import { Country } from '../../interfaces/country.interfaces';
   standalone: true,
 })
 export class ByCountryPageComponent { 
-  countryService = inject(CountryService);
+  private countryService = inject(CountryService);
+  private activatedRoute = inject(ActivatedRoute);
+  private router = inject(Router);
 
-  isLoading = signal(false);
-  isError = signal<string|null>(null);
-  countries = signal<Country[]>([]);
+  query = signal(this.activatedRoute.snapshot.queryParamMap.get('query') ?? '');
+  query$ = toObservable(this.query); // ✅ se define en contexto de inyección
 
-  get countriesList(): Country[]{
-    return this.countries();
-  }
-
-  onSearch(query: string){
-    if (this.isLoading()) return;
-
-    this.isLoading.set(true);
-    this.isError.set(null);
-    this.countryService.searchByCapital(query).subscribe((countries) => {
-      this.isLoading.set(false);
-      this.countries.set(countries);
-      console.log(countries);
+  constructor() {
+    effect(() => {
+      const q = this.query();
+      this.router.navigate([], {
+        queryParams: { query: q || null },
+        queryParamsHandling: 'merge',
+      });
     });
   }
+
+  countryResource = rxResource<Country[], unknown>({
+  stream: () => this.query$.pipe(
+    distinctUntilChanged(),
+    switchMap(query => {
+      if (!query.trim()) return of([]);
+
+      // ✅ Actualiza la URL
+      this.router.navigate(['/country/by-country'], {
+        queryParams: { query },
+        queryParamsHandling: 'merge'
+      });
+
+      // ✅ Devuelve el observable con los países
+      return this.countryService.searchByCountry(query.trim());
+    })
+  ),
+  defaultValue: []
+});
+
+
+  
   
 }

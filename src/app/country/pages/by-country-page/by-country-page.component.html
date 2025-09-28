@@ -1,4 +1,23 @@
 
-<country-search-input placeholder=" Buscar por capital"
-  (value)="onSearch($event)" />
-<app-country-list [countries]="countriesList" />
+<country-search-input 
+  placeholder=" Buscar por país"
+  (value)="query.set($event)"
+  [initialValue]="query()" ></country-search-input>
+
+@if (countryResource.isLoading()){
+  <h3>Obteniendo busqueda...</h3>
+}
+@else if (countryResource.error()) {
+  <h3 style="color: red;">{{ countryResource.error()?.message}}</h3>
+}
+@else if (countryResource.value().length) {
+  <app-country-list [countries]="countryResource.value()!" />
+}
+@else if(query() !== '') {
+  <p>No se encontraron países con esta busqueda... {{query()}}</p>
+}
+
+
+
+
+

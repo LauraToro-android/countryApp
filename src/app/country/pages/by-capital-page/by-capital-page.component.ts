@@ -1,46 +1,61 @@
-import { Component, inject, signal } from '@angular/core';
-import { SearchInputComponent } from "../../components/search-input/search-input.component";
-import { CountryListComponent } from "../../components/country-list/country-list.component";
+
+import { Component, inject, signal, effect } from '@angular/core';
 import { CountryService } from '../../services/country.service';
+import { CommonModule } from '@angular/common';
+import { SearchInputComponent } from '../../components/search-input/search-input.component';
+import { CountryListComponent } from '../../components/country-list/country-list.component';
+import { ActivatedRoute, Router } from '@angular/router';
+import { rxResource, toObservable } from '@angular/core/rxjs-interop';
 import { Country } from '../../interfaces/country.interfaces';
+import { distinctUntilChanged, of, switchMap } from 'rxjs';
+// ... otros imports iguales
 
 @Component({
   selector: 'app-by-capital-page',
   standalone: true,
-  imports: [SearchInputComponent, CountryListComponent],
+  imports: [
+    CommonModule,
+    SearchInputComponent,
+    CountryListComponent
+  ],
   templateUrl: './by-capital-page.component.html',
-  
 })
-export class ByCapitalPageComponent { 
-  countryService = inject(CountryService);
+export class ByCapitalPageComponent {
+  private countryService = inject(CountryService);
+  private activatedRoute = inject(ActivatedRoute);
+  private router = inject(Router);
 
-  isLoading = signal(false);
-  isError = signal<string|null>(null);
-  countries = signal<Country[]>([]);
+  // Inicializa query con el parámetro 'query' de la URL
+  query = signal(this.activatedRoute.snapshot.queryParamMap.get('query') ?? '');
+  query$ = toObservable(this.query);
+  
 
-  get countriesList(): Country[]{
-    return this.countries();
-  }
-
-
-  onSearch(query: string){
-    if (this.isLoading()) return;
-
-    this.isLoading.set(true);
-    this.isError.set(null);
-
-    this.countryService.searchByCapital(query).subscribe({
-      next: (countries) => {
-      this.isLoading.set(false);
-      this.countries.set(countries);
-      },
-      error: (err ) =>{
-        console.log(err);
-        this.isLoading.set(false);
-        this.countries.set([]);
-        this.isError.set(err);
-      },
+  // Actualiza URL cada vez que cambia query
+  constructor() {
+    effect(() => {
+      const q = this.query();
+      this.router.navigate([], {
+        queryParams: { query: q || null },
+        queryParamsHandling: 'merge',
+      });
     });
   }
-  
+
+  countryResource = rxResource<Country[], unknown>({
+    stream: () => this.query$.pipe(
+      distinctUntilChanged(),
+      switchMap(query => {
+        if (!query.trim()) return of([]);
+
+        this.router.navigate(['/country/by-capital'], {
+          queryParams: {
+            query,
+          }
+        });
+
+        return this.countryService.searchByCapital(query.trim());
+      })
+    ),
+    defaultValue: []
+  });
 }

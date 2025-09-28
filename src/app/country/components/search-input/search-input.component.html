@@ -1,10 +1,16 @@
 <section class="flex flex-row gap-2 mt-2">
-    <input type="text"
-     class="input input-bordered mr-2 w-56" 
-     placeholder="Buscar por capital" 
-     autofocus
-     #txtSearch
-     (key.enter) = "value.emit(txtSearch.value)"
-     />
-     <button class="btn btn-primary" (click)="value.emit(txtSearch.value)">Buscar</button>
+  <input
+    type="text"
+    class="input input-bordered mr-2 w-56"
+    [placeholder]="placeholder"
+    autofocus
+    #txtSearch
+    (input)="inputValue.set(txtSearch.value)"
+    (keyup.enter)="emitNow(txtSearch.value)"
+    [value]="initialValue()"
+  />
+
+  <button class="btn btn-primary" (click)="emitNow(txtSearch.value)">
+    Buscar
+  </button>
 </section>

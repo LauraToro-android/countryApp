@@ -1,3 +1,9 @@
 /* You can add global styles to this file, and also import other style files */
 @import "tailwindcss";
 @plugin "daisyui";
+
+.scroll-horizontal {
+  overflow-x: auto;      /* Activa el scroll horizontal */
+  white-space: nowrap;   /* Evita que los elementos hagan wrap (salten a la siguiente línea) */
+}
+

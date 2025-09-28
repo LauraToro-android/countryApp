@@ -1,3 +1,4 @@
+import { CapitalInfo, Currencies, Languages, Maps } from "./rest-countries.interfaces";
 
 
 export interface Country{
@@ -8,4 +9,13 @@ export interface Country{
     capital: string;
     population: number;
 
+    region: string;
+    subRegion: string;
+    currencies: Currencies;
+    capitalInfo?: CapitalInfo;
+    maps?: Maps;
+    gini?: number;
+    area?: number;          // nuevo campo
+    borders?: string[];
+    languages?: Languages;
 }
