@@ -1,7 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { CountryListComponent } from "../../components/country-list/country-list.component";
 import { CountryService } from '../../services/country.service';
-import { RESTCountry } from '../../interfaces/rest-countries.interfaces';
+import { Country } from '../../interfaces/country.interfaces';
 
 @Component({
   selector: 'app-by-region-page',
@@ -13,9 +13,9 @@ export class ByRegionPageComponent {
 
   isLoading = signal(false);
   isError = signal<string|null>(null);
-  countries = signal<RESTCountry[]>([]);
+  countries = signal<Country[]>([]);
 
-  get countriesList(): RESTCountry[]{
+  get countriesList(): Country[]{
     return this.countries();
   }
 

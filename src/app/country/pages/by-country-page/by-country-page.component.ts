@@ -2,21 +2,22 @@ import { Component, inject, signal } from '@angular/core';
 import { SearchInputComponent } from "../../components/search-input/search-input.component";
 import { CountryListComponent } from "../../components/country-list/country-list.component";
 import { CountryService } from '../../services/country.service';
-import { RESTCountry } from '../../interfaces/rest-countries.interfaces';
+import { Country } from '../../interfaces/country.interfaces';
 
 @Component({
   selector: 'app-by-country-page',
   imports: [SearchInputComponent, CountryListComponent],
   templateUrl: './by-country-page.component.html',
+  standalone: true,
 })
 export class ByCountryPageComponent { 
   countryService = inject(CountryService);
 
   isLoading = signal(false);
   isError = signal<string|null>(null);
-  countries = signal<RESTCountry[]>([]);
+  countries = signal<Country[]>([]);
 
-  get countriesList(): RESTCountry[]{
+  get countriesList(): Country[]{
     return this.countries();
   }
 
@@ -31,4 +32,5 @@ export class ByCountryPageComponent {
       console.log(countries);
     });
   }
+  
 }
